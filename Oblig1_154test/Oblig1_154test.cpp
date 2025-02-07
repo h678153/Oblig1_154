@@ -129,12 +129,14 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 //
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-
-    static POINT pos{ 0,0 };  //startposisjon
-    static POINT direction{ 1,1 }; //Positiv x retning og positiv y retning
     static int maksantall = 1;
     RECT horisontaltlysvindu = { 280, 310, 440, 380 };
     RECT vertikaltlysvindu = { 370, 80, 440, 240 };
+    RECT horisontalvei = { 0, 250, 2000, 300 };
+    RECT vertikalvei = { 450, 0, 500, 1000 };
+    static int bilHorisontalX = 0; 
+    static int bilVertikalY = 0;   
+    const int bilHastighet = 10;   
 
 
 
@@ -142,6 +144,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     {
     case WM_CREATE:
         SetTimer(hWnd, 1, 4000, NULL);
+        SetTimer(hWnd, 5, 100, NULL); // Timer for bilene, 100ms
         break;
 
 
@@ -205,13 +208,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
             HBRUSH hBrushTest = CreateSolidBrush(RGB(255, 0, 0));
             HGDIOBJ hOrgTest = SelectObject(hdc, hBrushTest);
-            Rectangle(hdc, bil_horisontal.left, bil_horisontal.top, bil_horisontal.right, bil_horisontal.bottom);
+            Rectangle(hdc, bilHorisontalX, bil_horisontal.top, bilHorisontalX+30, bil_horisontal.bottom);
 
             DeleteObject(hBrushTest);
 
             HBRUSH hBrushTest1 = CreateSolidBrush(RGB(255, 0, 0));
             HGDIOBJ hOrgTest1 = SelectObject(hdc, hBrushTest1);
-            Rectangle(hdc, bil_vertikal.left, bil_vertikal.top, bil_vertikal.right, bil_vertikal.bottom);
+            Rectangle(hdc, bil_vertikal.left, bilVertikalY, bil_vertikal.right, bilVertikalY+30);
 
             DeleteObject(hBrushTest1);
 
@@ -349,7 +352,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 bilBrush = CreateSolidBrush(RGB((25 * i) % 255, (128 + 25 * i) % 255, (255 - (25 * i) % 255)));
                 HGDIOBJ hOrgBil = SelectObject(hdc, bilBrush);
 
-                Rectangle(hdc, bil_horisontal.left + 20, bil_horisontal.top, bil_horisontal.right + 20, bil_horisontal.bottom);
+                Rectangle(hdc, bil_horisontal.left += 20, bil_horisontal.top, bil_horisontal.right += 20, bil_horisontal.bottom);
                 DeleteObject(bilBrush);
                 }
 
@@ -392,6 +395,33 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             KillTimer(hWnd, 4);
             SetTimer(hWnd, 1, 5000, NULL);
             break;
+        case 5:
+            if (status == GREEN) {
+                bilVertikalY += bilHastighet;
+                InvalidateRect(hWnd, &vertikalvei, TRUE);
+                
+                
+                if (bilHorisontalX > vertikalvei.right) {
+                    bilHorisontalX += bilHastighet;
+                    InvalidateRect(hWnd, &horisontalvei, TRUE);
+                }
+            }
+            else if (status == RED) {
+                bilHorisontalX += bilHastighet;
+                InvalidateRect(hWnd, &horisontalvei, TRUE);
+                
+             
+            }
+            if (bilVertikalY > horisontalvei.bottom) {
+                bilVertikalY += bilHastighet;
+                InvalidateRect(hWnd, &vertikalvei, TRUE);
+            }
+            if (bilHorisontalX > vertikalvei.right) {
+                bilHorisontalX += bilHastighet;
+                InvalidateRect(hWnd, &horisontalvei, TRUE);
+            }
+
+            break;
         }
        
 
@@ -405,6 +435,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
         InvalidateRect(hWnd, &horisontaltlysvindu, TRUE); //Oppdaterer hele skjermen, id 0, Slette skjermen per update = true
         InvalidateRect(hWnd, &vertikaltlysvindu, TRUE);
+
+
 
     }
     break;
