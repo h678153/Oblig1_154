@@ -4,11 +4,23 @@
 #include "framework.h"
 #include "Oblig1_154test.h"
 #include "bil.h"
+#include "vector"
 
 #define MAX_LOADSTRING 100
 
 enum bytteLys { RED, REDYELLOW, GREEN, YELLOW };
 bytteLys status = RED;
+
+
+struct Car{
+    int x = 0, y = 0;
+    int hastighet;
+    bool erHorisontal;
+};
+std::vector<Car> cars;
+
+
+
 
 // Global Variables:
 HINSTANCE hInst;                                // current instance
@@ -145,6 +157,16 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     case WM_CREATE:
         SetTimer(hWnd, 1, 4000, NULL);
         SetTimer(hWnd, 5, 100, NULL); // Timer for bilene, 100ms
+
+
+        for (int i = 0; i < 20; i++) {
+            cars.push_back({ (vertikalvei.left-45) - 70 * i, 265, 10, true }); //horisontale biler
+        }
+        for (int i = 0; i < 20; i++) {
+            cars.push_back({ 465, (horisontalvei.top-45) -70 * i, 10, false }); //vertikale biler
+        }
+
+
         break;
 
 
@@ -166,195 +188,181 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         }
         break;
     case WM_PAINT:
-        {
-            PAINTSTRUCT ps;
-            HDC hdc = BeginPaint(hWnd, &ps); //handle device context, fungerer som peker
-            // TODO: Add any drawing code that uses hdc here...
+    {
+        PAINTSTRUCT ps;
+        HDC hdc = BeginPaint(hWnd, &ps); //handle device context, fungerer som peker
+        // TODO: Add any drawing code that uses hdc here...
 
-            HBRUSH hBrushGreyRamme = CreateSolidBrush(RGB(105, 105, 105));
-            HGDIOBJ hOrgRektangel = SelectObject(hdc, hBrushGreyRamme);
-            Rectangle(hdc, 280, 310, 440, 380); //horisontalt lys, 160 left/right, 70 top/bot
+        HBRUSH hBrushGreyRamme = CreateSolidBrush(RGB(105, 105, 105));
+        HGDIOBJ hOrgRektangel = SelectObject(hdc, hBrushGreyRamme);
+        Rectangle(hdc, 280, 310, 440, 380); //horisontalt lys, 160 left/right, 70 top/bot
 
-            Rectangle(hdc, 370, 80, 440, 240); //vertikalt lys, 160 top/bot, 70 left/right
-            //Rectangle(hdc, 90, 90, 210, 430);
-            DeleteObject(hBrushGreyRamme);
-
-
-
-
-            HBRUSH hBrushVei = CreateSolidBrush(RGB(50, 50, 50));
-            HGDIOBJ hOrgVei = SelectObject(hdc, hBrushVei);
-            Rectangle(hdc, 450, 0, 500, 1000); //vertikal vei
-
-            Rectangle(hdc, 0, 250, 2000, 300); //horisontal vei
-            DeleteObject(hBrushVei);
-            
-            // Lage bevegende objekt:
-            // Rectangle(hdc, pos.x - 25, pos.y - 25, pos.x + 25, pos.y + 25);
-
-
-            HBRUSH hBrushGreyLys = NULL;
-            HGDIOBJ hOrgGråLys = NULL;
-    
-            HBRUSH aktivbrush = NULL;
-            HGDIOBJ hOrg = NULL;
-
-
-            // ----------------------
-            // biler:
-
-            RECT bil_vertikal = { 465, 0, 485, 30 };
-            RECT bil_horisontal = { 0, 265, 30, 285 };
-
-            HBRUSH hBrushTest = CreateSolidBrush(RGB(255, 0, 0));
-            HGDIOBJ hOrgTest = SelectObject(hdc, hBrushTest);
-            Rectangle(hdc, bilHorisontalX, bil_horisontal.top, bilHorisontalX+30, bil_horisontal.bottom);
-
-            DeleteObject(hBrushTest);
-
-            HBRUSH hBrushTest1 = CreateSolidBrush(RGB(255, 0, 0));
-            HGDIOBJ hOrgTest1 = SelectObject(hdc, hBrushTest1);
-            Rectangle(hdc, bil_vertikal.left, bilVertikalY, bil_vertikal.right, bilVertikalY+30);
-
-            DeleteObject(hBrushTest1);
-
-
-            //-----------------------
-
-            switch (status) {
-
-            case RED:
-                // VERTIKAL RED
-
-                aktivbrush = CreateSolidBrush(RGB(255, 0, 0)); //Oppretter brush med rød farge
-                hOrg = SelectObject(hdc, aktivbrush); //Legger den røde brushen inn i tegneflaten og returnerer brushen som 
-                //var der originalt. Sånn at vi kan legge den tilbake før vi sletter 
-                // den røde brushen
-                // Rectangle(hdc, 370, 80, 440, 240);
-                Ellipse(hdc, 385, 90, 425, 130); //rød vertikal
-
-                hBrushGreyLys = CreateSolidBrush(RGB(169, 169, 169));
-                hOrgGråLys = SelectObject(hdc, hBrushGreyLys);
-                
-                Ellipse(hdc, 385, 140, 425, 180); //gul vertikal
-                Ellipse(hdc, 385, 190, 425, 230); // grønn vertikal
-
-
-                //HORISONTAL GRØNN:
-                aktivbrush = CreateSolidBrush(RGB(0, 255, 0));
-                hOrg = SelectObject(hdc, aktivbrush);
-                // Rectangle(hdc, 280, 310, 440, 380); horisontal lys
-                Ellipse(hdc, 390, 325, 430, 365); // grønn horisontal
-
-                hBrushGreyLys = CreateSolidBrush(RGB(169, 169, 169));
-                hOrgGråLys = SelectObject(hdc, hBrushGreyLys);
-                Ellipse(hdc, 290, 325, 330, 365); //rød horisontal
-                Ellipse(hdc, 340, 325, 380, 365); //gul horisontal
-
-
-                break;
+        Rectangle(hdc, 370, 80, 440, 240); //vertikalt lys, 160 top/bot, 70 left/right
+        //Rectangle(hdc, 90, 90, 210, 430);
+        DeleteObject(hBrushGreyRamme);
 
 
 
-            case REDYELLOW:
-                //VERTIKAL REDYELLOW
-                aktivbrush = CreateSolidBrush(RGB(255, 0, 0));
-                hOrg = SelectObject(hdc, aktivbrush);
-                Ellipse(hdc, 385, 90, 425, 130); //Koordinater for left, top, right, bottom - dette lager en vanlig sirkel, //rød vertikal
 
-                aktivbrush = CreateSolidBrush(RGB(255, 255, 0));
-                hOrg = SelectObject(hdc, aktivbrush);
-                Ellipse(hdc, 385, 140, 425, 180); //gul vertikal
+        HBRUSH hBrushVei = CreateSolidBrush(RGB(50, 50, 50));
+        HGDIOBJ hOrgVei = SelectObject(hdc, hBrushVei);
+        Rectangle(hdc, 450, 0, 500, 1000); //vertikal vei
 
-                hBrushGreyLys = CreateSolidBrush(RGB(169, 169, 169));
-                hOrgGråLys = SelectObject(hdc, hBrushGreyLys);
-                Ellipse(hdc, 385, 190, 425, 230); // grønn vertikal
+        Rectangle(hdc, 0, 250, 2000, 300); //horisontal vei
+        DeleteObject(hBrushVei);
+
+        // Lage bevegende objekt:
+        // Rectangle(hdc, pos.x - 25, pos.y - 25, pos.x + 25, pos.y + 25);
 
 
-                // HORISONTAL YELLOW
+        HBRUSH hBrushGreyLys = NULL;
+        HGDIOBJ hOrgGråLys = NULL;
 
-                aktivbrush = CreateSolidBrush(RGB(255, 255, 0));
-                hOrg = SelectObject(hdc, aktivbrush);
-                Ellipse(hdc, 340, 325, 380, 365); //gul horisontal
-
-                hBrushGreyLys = CreateSolidBrush(RGB(169, 169, 169));
-                hOrgGråLys = SelectObject(hdc, hBrushGreyLys);
-                Ellipse(hdc, 290, 325, 330, 365); //rød horisontal
-                Ellipse(hdc, 390, 325, 430, 365); // grønn horisontal
-
-                break;
+        HBRUSH aktivbrush = NULL;
+        HGDIOBJ hOrg = NULL;
 
 
-            case GREEN: 
-                // VERTIKAL GREEN
-                aktivbrush = CreateSolidBrush(RGB(0, 255, 0));
-                hOrg = SelectObject(hdc, aktivbrush);
-                Ellipse(hdc, 385, 190, 425, 230); // grønn vertikal
-
-                hBrushGreyLys = CreateSolidBrush(RGB(169, 169, 169));
-                hOrgGråLys = SelectObject(hdc, hBrushGreyLys);
-                Ellipse(hdc, 385, 90, 425, 130); //rød vertikal
-                Ellipse(hdc, 385, 140, 425, 180); //gul vertikal
+        // ----------------------
 
 
-                // HORISONTAL RED:
+        switch (status) {
 
-                aktivbrush = CreateSolidBrush(RGB(255, 0, 0)); 
-                hOrg = SelectObject(hdc, aktivbrush);
+        case RED:
+            // VERTIKAL RED
 
-                Ellipse(hdc, 290, 325, 330, 365); //rød horisontal
+            aktivbrush = CreateSolidBrush(RGB(255, 0, 0)); //Oppretter brush med rød farge
+            hOrg = SelectObject(hdc, aktivbrush); //Legger den røde brushen inn i tegneflaten og returnerer brushen som 
+            //var der originalt. Sånn at vi kan legge den tilbake før vi sletter 
+            // den røde brushen
+            // Rectangle(hdc, 370, 80, 440, 240);
+            Ellipse(hdc, 385, 90, 425, 130); //rød vertikal
 
+            hBrushGreyLys = CreateSolidBrush(RGB(169, 169, 169));
+            hOrgGråLys = SelectObject(hdc, hBrushGreyLys);
 
-                hBrushGreyLys = CreateSolidBrush(RGB(169, 169, 169));
-                hOrgGråLys = SelectObject(hdc, hBrushGreyLys);
-
-                Ellipse(hdc, 340, 325, 380, 365); //gul horisontal
-                Ellipse(hdc, 390, 325, 430, 365); // grønn horisontal
-
-                break;
-
-
-            case YELLOW: 
-                // VERTIKAL YELLOW
-                aktivbrush = CreateSolidBrush(RGB(255, 255, 0));
-                hOrg = SelectObject(hdc, aktivbrush);
-                Ellipse(hdc, 385, 140, 425, 180); //gul vertikal
-
-                hBrushGreyLys = CreateSolidBrush(RGB(169, 169, 169));
-                hOrgGråLys = SelectObject(hdc, hBrushGreyLys);
-                Ellipse(hdc, 385, 90, 425, 130); //rød vertikal
-                Ellipse(hdc, 385, 190, 425, 230); // grønn vertikal
+            Ellipse(hdc, 385, 140, 425, 180); //gul vertikal
+            Ellipse(hdc, 385, 190, 425, 230); // grønn vertikal
 
 
-                //HORISONTAL REDYELLOW:
+            //HORISONTAL GRØNN:
+            aktivbrush = CreateSolidBrush(RGB(0, 255, 0));
+            hOrg = SelectObject(hdc, aktivbrush);
+            // Rectangle(hdc, 280, 310, 440, 380); horisontal lys
+            Ellipse(hdc, 390, 325, 430, 365); // grønn horisontal
 
-                aktivbrush = CreateSolidBrush(RGB(255, 0, 0));
-                hOrg = SelectObject(hdc, aktivbrush);
-                Ellipse(hdc, 290, 325, 330, 365); //rød horisontal
-
-                aktivbrush = CreateSolidBrush(RGB(255, 255, 0));
-                hOrg = SelectObject(hdc, aktivbrush);
-                Ellipse(hdc, 340, 325, 380, 365); //gul horisontal
-
-                hBrushGreyLys = CreateSolidBrush(RGB(169, 169, 169));
-                hOrgGråLys = SelectObject(hdc, hBrushGreyLys);
-                Ellipse(hdc, 390, 325, 430, 365); // grønn horisontal
+            hBrushGreyLys = CreateSolidBrush(RGB(169, 169, 169));
+            hOrgGråLys = SelectObject(hdc, hBrushGreyLys);
+            Ellipse(hdc, 290, 325, 330, 365); //rød horisontal
+            Ellipse(hdc, 340, 325, 380, 365); //gul horisontal
 
 
-                break;
-            }
-
-            HBRUSH bilBrush;
+            break;
 
 
-            
-           for (int i = 0; i < maksantall; i++) {
-                bilBrush = CreateSolidBrush(RGB((25 * i) % 255, (128 + 25 * i) % 255, (255 - (25 * i) % 255)));
-                HGDIOBJ hOrgBil = SelectObject(hdc, bilBrush);
 
-                Rectangle(hdc, bil_horisontal.left += 20, bil_horisontal.top, bil_horisontal.right += 20, bil_horisontal.bottom);
-                DeleteObject(bilBrush);
+        case REDYELLOW:
+            //VERTIKAL REDYELLOW
+            aktivbrush = CreateSolidBrush(RGB(255, 0, 0));
+            hOrg = SelectObject(hdc, aktivbrush);
+            Ellipse(hdc, 385, 90, 425, 130); //Koordinater for left, top, right, bottom - dette lager en vanlig sirkel, //rød vertikal
+
+            aktivbrush = CreateSolidBrush(RGB(255, 255, 0));
+            hOrg = SelectObject(hdc, aktivbrush);
+            Ellipse(hdc, 385, 140, 425, 180); //gul vertikal
+
+            hBrushGreyLys = CreateSolidBrush(RGB(169, 169, 169));
+            hOrgGråLys = SelectObject(hdc, hBrushGreyLys);
+            Ellipse(hdc, 385, 190, 425, 230); // grønn vertikal
+
+
+            // HORISONTAL YELLOW
+
+            aktivbrush = CreateSolidBrush(RGB(255, 255, 0));
+            hOrg = SelectObject(hdc, aktivbrush);
+            Ellipse(hdc, 340, 325, 380, 365); //gul horisontal
+
+            hBrushGreyLys = CreateSolidBrush(RGB(169, 169, 169));
+            hOrgGråLys = SelectObject(hdc, hBrushGreyLys);
+            Ellipse(hdc, 290, 325, 330, 365); //rød horisontal
+            Ellipse(hdc, 390, 325, 430, 365); // grønn horisontal
+
+            break;
+
+
+        case GREEN:
+            // VERTIKAL GREEN
+            aktivbrush = CreateSolidBrush(RGB(0, 255, 0));
+            hOrg = SelectObject(hdc, aktivbrush);
+            Ellipse(hdc, 385, 190, 425, 230); // grønn vertikal
+
+            hBrushGreyLys = CreateSolidBrush(RGB(169, 169, 169));
+            hOrgGråLys = SelectObject(hdc, hBrushGreyLys);
+            Ellipse(hdc, 385, 90, 425, 130); //rød vertikal
+            Ellipse(hdc, 385, 140, 425, 180); //gul vertikal
+
+
+            // HORISONTAL RED:
+
+            aktivbrush = CreateSolidBrush(RGB(255, 0, 0));
+            hOrg = SelectObject(hdc, aktivbrush);
+
+            Ellipse(hdc, 290, 325, 330, 365); //rød horisontal
+
+
+            hBrushGreyLys = CreateSolidBrush(RGB(169, 169, 169));
+            hOrgGråLys = SelectObject(hdc, hBrushGreyLys);
+
+            Ellipse(hdc, 340, 325, 380, 365); //gul horisontal
+            Ellipse(hdc, 390, 325, 430, 365); // grønn horisontal
+
+            break;
+
+
+        case YELLOW:
+            // VERTIKAL YELLOW
+            aktivbrush = CreateSolidBrush(RGB(255, 255, 0));
+            hOrg = SelectObject(hdc, aktivbrush);
+            Ellipse(hdc, 385, 140, 425, 180); //gul vertikal
+
+            hBrushGreyLys = CreateSolidBrush(RGB(169, 169, 169));
+            hOrgGråLys = SelectObject(hdc, hBrushGreyLys);
+            Ellipse(hdc, 385, 90, 425, 130); //rød vertikal
+            Ellipse(hdc, 385, 190, 425, 230); // grønn vertikal
+
+
+            //HORISONTAL REDYELLOW:
+
+            aktivbrush = CreateSolidBrush(RGB(255, 0, 0));
+            hOrg = SelectObject(hdc, aktivbrush);
+            Ellipse(hdc, 290, 325, 330, 365); //rød horisontal
+
+            aktivbrush = CreateSolidBrush(RGB(255, 255, 0));
+            hOrg = SelectObject(hdc, aktivbrush);
+            Ellipse(hdc, 340, 325, 380, 365); //gul horisontal
+
+            hBrushGreyLys = CreateSolidBrush(RGB(169, 169, 169));
+            hOrgGråLys = SelectObject(hdc, hBrushGreyLys);
+            Ellipse(hdc, 390, 325, 430, 365); // grønn horisontal
+
+
+            break;
+        }
+        
+        HBRUSH bilBrush = CreateSolidBrush(RGB(255, 0, 0));
+
+                SelectObject(hdc, bilBrush);
+                for (auto& car : cars) {
+                    if (car.erHorisontal) {
+                        Rectangle(hdc, car.x, car.y, car.x + 30, car.y + 20);
+                    }
+                    else {
+                        Rectangle(hdc, car.x + 20, car.y + 30, car.x, car.y);
+                    }
                 }
+
+
+                DeleteObject(bilBrush);
+               
 
              
             
@@ -396,30 +404,46 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             SetTimer(hWnd, 1, 5000, NULL);
             break;
         case 5:
-            if (status == GREEN) {
-                bilVertikalY += bilHastighet;
-                InvalidateRect(hWnd, &vertikalvei, TRUE);
+            if (wParam == 5) {
+
+                for (auto& car : cars) {
+                    if (car.erHorisontal) {
+
+                        if (car.x + 40 < vertikalvei.left && status == GREEN) {
+                            car.x += car.erHorisontal ? car.hastighet : 0;
+                        }
+                        if(car.x+40 >= vertikalvei.left) {
+                            car.x += car.erHorisontal ? car.hastighet : 0;
+                        }
+                    }
+                    if (!car.erHorisontal) {
+                        if (car.y + 40 < horisontalvei.top && status == RED) {
+                        car.y += car.erHorisontal ? 0 : car.hastighet;
+                        }
+                        if (car.y + 40 >= horisontalvei.top){
+                            car.y += car.erHorisontal ? 0 : car.hastighet;
+                    }
+                }
                 
                 
-                if (bilHorisontalX > vertikalvei.right) {
-                    bilHorisontalX += bilHastighet;
-                    InvalidateRect(hWnd, &horisontalvei, TRUE);
                 }
             }
-            else if (status == RED) {
-                bilHorisontalX += bilHastighet;
-                InvalidateRect(hWnd, &horisontalvei, TRUE);
-                
-             
+
+            for (auto& car : cars) {
+                if (car.x > 2000 || car.y > 1000) {
+                    if (car.erHorisontal) {
+						car.x = 0;
+					}
+                    else {
+                        car.y = 0;
+                    }
+                }
             }
-            if (bilVertikalY > horisontalvei.bottom) {
-                bilVertikalY += bilHastighet;
-                InvalidateRect(hWnd, &vertikalvei, TRUE);
-            }
-            if (bilHorisontalX > vertikalvei.right) {
-                bilHorisontalX += bilHastighet;
-                InvalidateRect(hWnd, &horisontalvei, TRUE);
-            }
+
+            InvalidateRect(hWnd, &horisontalvei, TRUE);
+            InvalidateRect(hWnd, &vertikalvei, TRUE);
+
+
 
             break;
         }
@@ -433,7 +457,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             //    direction.y *= -1;
         //}
 
-        InvalidateRect(hWnd, &horisontaltlysvindu, TRUE); //Oppdaterer hele skjermen, id 0, Slette skjermen per update = true
+        InvalidateRect(hWnd, &horisontaltlysvindu, TRUE); 
         InvalidateRect(hWnd, &vertikaltlysvindu, TRUE);
 
 
@@ -442,6 +466,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     break;
 
     case WM_DESTROY:
+
         PostQuitMessage(0);
         break;
 
