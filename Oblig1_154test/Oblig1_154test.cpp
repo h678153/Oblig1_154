@@ -5,6 +5,9 @@
 #include "Oblig1_154test.h"
 #include "bil.h"
 #include "vector"
+#include "resource.h"
+
+
 
 #define MAX_LOADSTRING 100
 
@@ -19,7 +22,8 @@ struct Car{
 };
 std::vector<Car> cars;
 
-
+double pw = 0.1;
+double pn = 0.1;
 
 
 // Global Variables:
@@ -32,6 +36,7 @@ ATOM                MyRegisterClass(HINSTANCE hInstance);
 BOOL                InitInstance(HINSTANCE, int);
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
+INT_PTR CALLBACK    ProbabilityDialog(HWND, UINT, WPARAM, LPARAM);
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_opt_ HINSTANCE hPrevInstance,
@@ -157,6 +162,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     case WM_CREATE:
         SetTimer(hWnd, 1, 4000, NULL);
         SetTimer(hWnd, 5, 100, NULL); // Timer for bilene, 100ms
+		SetTimer(hWnd, 6, 1000, NULL); // Timer for sannsynlighet, 1000ms
+
+		DialogBox(hInst, MAKEINTRESOURCE(IDD_PROBABILITY), hWnd, ProbabilityDialog);
 
 
         for (int i = 0; i < 20; i++) {
@@ -405,39 +413,68 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             break;
         case 5:
             if (wParam == 5) {
-
+                
+				// beveger bilene
                 for (auto& car : cars) {
-                    if (car.erHorisontal) {
+                    bool canMove = true;
+                    
 
-                        if (car.x + 40 < vertikalvei.left && status == GREEN) {
-                            car.x += car.erHorisontal ? car.hastighet : 0;
-                        }
-                        if(car.x+40 >= vertikalvei.left) {
-                            car.x += car.erHorisontal ? car.hastighet : 0;
+					// Sjekker om bilen kolliderer med en annen bil for reset
+                    for (const auto& otherCar : cars) {
+                        if (&car != &otherCar) {
+                            if (car.erHorisontal && otherCar.erHorisontal) {
+                                if (car.x + 30 >= otherCar.x && car.x < otherCar.x + 30 && car.y == otherCar.y) {
+                                    canMove = false;
+                                    break;
+                                }
+                            }
+                            else if (!car.erHorisontal && !otherCar.erHorisontal) {
+                                if (car.y + 30 >= otherCar.y && car.y < otherCar.y + 30 && car.x == otherCar.x) {
+                                    canMove = false;
+                                    break;
+                                }
+                            }
                         }
                     }
-                    if (!car.erHorisontal) {
-                        if (car.y + 40 < horisontalvei.top && status == RED) {
-                        car.y += car.erHorisontal ? 0 : car.hastighet;
-                        }
-                        if (car.y + 40 >= horisontalvei.top){
-                            car.y += car.erHorisontal ? 0 : car.hastighet;
-                    }
-                }
+                        /*if (canMove) {*/
+                            if (car.erHorisontal) {
+
+                                if (car.x + 40 < vertikalvei.left && status == GREEN) {
+                                    car.x += car.erHorisontal ? car.hastighet : 0;
+                                }
+                                if (car.x + 40 >= vertikalvei.left) {
+                                    car.x += car.erHorisontal ? car.hastighet : 0;
+                                }
+                            }
+                            if (!car.erHorisontal) {
+                                if (car.y + 40 < horisontalvei.top && status == RED) {
+                                    car.y += car.erHorisontal ? 0 : car.hastighet;
+                                }
+                                if (car.y + 40 >= horisontalvei.top) {
+                                    car.y += car.erHorisontal ? 0 : car.hastighet;
+                                }
+                            }
+                            if (car.x > 2000 || car.y > 1000) {
+                                if (car.erHorisontal && canMove) {
+                                    car.x = 0;
+                                }
+                                else if(canMove){
+                                    car.y = 0;
+                                }
+                            }
+                   // }
                 
                 
                 }
             }
-
-            for (auto& car : cars) {
-                if (car.x > 2000 || car.y > 1000) {
-                    if (car.erHorisontal) {
-						car.x = 0;
-					}
-                    else {
-                        car.y = 0;
-                    }
-                }
+            break;
+        case 6:
+			//Timer for sannsynlighet for å legge til en bil
+            if ((double)rand() / RAND_MAX < pw) {
+				cars.push_back({ (horisontalvei.left - 45), 265, 10, true });
+            }
+            if ((double)rand() / RAND_MAX < pn) {
+                cars.push_back({ 465, (horisontalvei.top - 45), 10, false }); // New car from north
             }
 
             InvalidateRect(hWnd, &horisontalvei, TRUE);
