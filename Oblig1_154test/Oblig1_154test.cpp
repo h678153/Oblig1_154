@@ -5,8 +5,6 @@
 #include "Oblig1_154test.h"
 #include "bil.h"
 #include "vector"
-#include "resource.h"
-
 
 
 #define MAX_LOADSTRING 100
@@ -36,7 +34,7 @@ ATOM                MyRegisterClass(HINSTANCE hInstance);
 BOOL                InitInstance(HINSTANCE, int);
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
-INT_PTR CALLBACK    ProbabilityDialog(HWND, UINT, WPARAM, LPARAM);
+INT_PTR CALLBACK    Probability(HWND, UINT, WPARAM, LPARAM);
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_opt_ HINSTANCE hPrevInstance,
@@ -157,14 +155,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 
 
+
     switch (message)
     {
     case WM_CREATE:
         SetTimer(hWnd, 1, 4000, NULL);
         SetTimer(hWnd, 5, 100, NULL); // Timer for bilene, 100ms
-		SetTimer(hWnd, 6, 1000, NULL); // Timer for sannsynlighet, 1000ms
 
-		DialogBox(hInst, MAKEINTRESOURCE(IDD_PROBABILITY), hWnd, ProbabilityDialog);
 
 
         for (int i = 0; i < 20; i++) {
@@ -190,6 +187,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             case IDM_EXIT:
                 DestroyWindow(hWnd);
                 break;
+            case IDM_PROBABILITY:
+				DialogBox(hInst, MAKEINTRESOURCE(IDD_PROBABILITY), hWnd, Probability);
+				break;
             default:
                 return DefWindowProc(hWnd, message, wParam, lParam);
             }
@@ -467,22 +467,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 
                 }
             }
-            break;
-        case 6:
-			//Timer for sannsynlighet for å legge til en bil
-            if ((double)rand() / RAND_MAX < pw) {
-				cars.push_back({ (horisontalvei.left - 45), 265, 10, true });
-            }
-            if ((double)rand() / RAND_MAX < pn) {
-                cars.push_back({ 465, (horisontalvei.top - 45), 10, false }); // New car from north
-            }
+
 
             InvalidateRect(hWnd, &horisontalvei, TRUE);
             InvalidateRect(hWnd, &vertikalvei, TRUE);
 
 
-
             break;
+            
         }
        
 
@@ -543,4 +535,51 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
         break;
     }
     return (INT_PTR)FALSE;
+}
+
+INT_PTR CALLBACK Probability(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
+{
+    UNREFERENCED_PARAMETER(lParam);
+    switch (message)
+    {
+    case WM_INITDIALOG:
+    {
+		HWND pw1 = GetDlgItem(hDlg, IDC_pw1);
+		HWND pn1 = GetDlgItem(hDlg, IDC_pn1);
+		SetWindowText(pw1, L"0.1");
+		SetWindowText(pn1, L"0.1");
+        return (INT_PTR)TRUE;
+    }
+    case WM_COMMAND:
+        if (LOWORD(wParam) == IDOK) {
+            wchar_t buffer[100];
+
+            // Get text from the input box
+            GetDlgItemText(hDlg, IDC_pw1, buffer, sizeof(buffer) / sizeof(buffer[0]));
+
+            // Convert text to double
+            double pw = wcstod(buffer, NULL);
+
+            // Check if conversion was successful
+            if (pw != 0 || buffer[0] == '0') {
+                ::pw = pw; // Assign to the global variable
+            }
+
+            // Repeat for pn
+            GetDlgItemText(hDlg, IDC_pn1, buffer, sizeof(buffer) / sizeof(buffer[0]));
+            double pn = wcstod(buffer, NULL);
+            if (pn != 0 || buffer[0] == '0') {
+                ::pn = pn; // Assign to the global variable
+            }
+
+            EndDialog(hDlg, LOWORD(wParam));
+            return (INT_PTR)TRUE;
+        }
+        else if (LOWORD(wParam) == IDCANCEL) {
+            EndDialog(hDlg, LOWORD(wParam));
+            return (INT_PTR)TRUE;
+        break;
+    }
+    return (INT_PTR)FALSE;
+}
 }
