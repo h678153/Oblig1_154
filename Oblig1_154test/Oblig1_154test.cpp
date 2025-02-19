@@ -2,9 +2,11 @@
 //
 
 #include "framework.h"
+#include <windows.h>
 #include "Oblig1_154test.h"
 #include "bil.h"
 #include "vector"
+#include <queue>
 
 
 #define MAX_LOADSTRING 100
@@ -18,10 +20,10 @@ struct Car{
     int hastighet;
     bool erHorisontal;
 };
-std::vector<Car> cars;
+std::queue<Car> cars;
 
-double pw = 0.1;
-double pn = 0.1;
+double pw = 0.80;
+double pn = 0.60;
 
 
 // Global Variables:
@@ -144,7 +146,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 //
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-    static int maksantall = 1;
+    static int maksantall = 30;
     RECT horisontaltlysvindu = { 280, 310, 440, 380 };
     RECT vertikaltlysvindu = { 370, 80, 440, 240 };
     RECT horisontalvei = { 0, 250, 2000, 300 };
@@ -161,15 +163,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     case WM_CREATE:
         SetTimer(hWnd, 1, 4000, NULL);
         SetTimer(hWnd, 5, 100, NULL); // Timer for bilene, 100ms
+		SetTimer(hWnd, 6, 1000, NULL); // Timer for spawne biler, 1000ms
 
 
 
-        for (int i = 0; i < 20; i++) {
-            cars.push_back({ (vertikalvei.left-45) - 70 * i, 265, 10, true }); //horisontale biler
-        }
-        for (int i = 0; i < 20; i++) {
-            cars.push_back({ 465, (horisontalvei.top-45) -70 * i, 10, false }); //vertikale biler
-        }
 
 
         break;
@@ -359,7 +356,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         HBRUSH bilBrush = CreateSolidBrush(RGB(255, 0, 0));
 
                 SelectObject(hdc, bilBrush);
-                for (auto& car : cars) {
+				std::queue<Car> tempQueue = cars;
+                while (!tempQueue.empty()) {
+					Car car = tempQueue.front();
+					tempQueue.pop();
                     if (car.erHorisontal) {
                         Rectangle(hdc, car.x, car.y, car.x + 30, car.y + 20);
                     }
@@ -413,59 +413,54 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             break;
         case 5:
             if (wParam == 5) {
-                
-				// beveger bilene
-                for (auto& car : cars) {
+                std::queue<Car> tempQueue;
+                while (!cars.empty()) {
+                    Car car = cars.front();
+                    cars.pop();
                     bool canMove = true;
-                    
 
-					// Sjekker om bilen kolliderer med en annen bil for reset
-                    for (const auto& otherCar : cars) {
-                        if (&car != &otherCar) {
-                            if (car.erHorisontal && otherCar.erHorisontal) {
-                                if (car.x + 30 >= otherCar.x && car.x < otherCar.x + 30 && car.y == otherCar.y) {
-                                    canMove = false;
-                                    break;
-                                }
+                    // Sjekker om bilen kolliderer med en annen bil for reset
+                    std::queue<Car> checkQueue = tempQueue;
+                    while (!checkQueue.empty()) {
+                        Car otherCar = checkQueue.front();
+                        checkQueue.pop();
+                        if (car.erHorisontal && otherCar.erHorisontal) {
+                            if (car.x + 40 >= otherCar.x && car.x < otherCar.x + 40 && car.y == otherCar.y) {
+                                canMove = false;
+                                break;
                             }
-                            else if (!car.erHorisontal && !otherCar.erHorisontal) {
-                                if (car.y + 30 >= otherCar.y && car.y < otherCar.y + 30 && car.x == otherCar.x) {
-                                    canMove = false;
-                                    break;
-                                }
+                        }
+                        else if (!car.erHorisontal && !otherCar.erHorisontal) {
+                            if (car.y + 40 >= otherCar.y && car.y < otherCar.y + 40 && car.x == otherCar.x){
+                                canMove = false;
+                                break;
+                            }
+                        }
+                        }
+                    
+                    if (canMove) {
+                        if (car.erHorisontal) {
+                            if (car.x + 40 < vertikalvei.left && (status == RED || car.x + 40 < vertikalvei.left - 10)) {
+                                car.x += car.hastighet;
+                            }
+                            else if (car.x + 40 >= vertikalvei.left) {
+                                car.x += car.hastighet;
+                            }
+                        }
+                        else {
+                            if (car.y + 40 < horisontalvei.top && (status == GREEN || car.y + 40 < horisontalvei.top - 10)) {
+                                car.y += car.hastighet;
+                            }
+                            else if (car.y + 40 >= horisontalvei.top) {
+                                car.y += car.hastighet;
                             }
                         }
                     }
-                        /*if (canMove) {*/
-                            if (car.erHorisontal) {
-
-                                if (car.x + 40 < vertikalvei.left && status == GREEN) {
-                                    car.x += car.erHorisontal ? car.hastighet : 0;
-                                }
-                                if (car.x + 40 >= vertikalvei.left) {
-                                    car.x += car.erHorisontal ? car.hastighet : 0;
-                                }
-                            }
-                            if (!car.erHorisontal) {
-                                if (car.y + 40 < horisontalvei.top && status == RED) {
-                                    car.y += car.erHorisontal ? 0 : car.hastighet;
-                                }
-                                if (car.y + 40 >= horisontalvei.top) {
-                                    car.y += car.erHorisontal ? 0 : car.hastighet;
-                                }
-                            }
-                            if (car.x > 2000 || car.y > 1000) {
-                                if (car.erHorisontal && canMove) {
-                                    car.x = 0;
-                                }
-                                else if(canMove){
-                                    car.y = 0;
-                                }
-                            }
-                   // }
-                
-                
+                    if (car.x <= 1300 && car.y <= 1000) {
+                        tempQueue.push(car);
+                    }
                 }
+                cars = tempQueue;
             }
 
 
@@ -474,17 +469,21 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 
             break;
-            
+
+		case 6:
+            if (cars.size() < maksantall) {
+                if (rand() / (double)RAND_MAX < pw) { // gir tilfeldig verdi og sjekker om denne er innenfor pw
+                    cars.push({ 0, 265, 10, true });
+                }
+                if (rand() / (double)RAND_MAX < pn) {
+                    cars.push({ 465, 0, 10, false });
+                }
+				InvalidateRect(hWnd, NULL, TRUE);
+            }
+
+            break;
         }
        
-
-        // Snur direction dersom det bevegende objektet treffer noen av kantene
-       // if (pos.x < redRect.left || pos.x > win.right) {
-            //direction.x *= -1;
-            //}
-        //if (pos.y < win.top || pos.y > win.bottom) {
-            //    direction.y *= -1;
-        //}
 
         InvalidateRect(hWnd, &horisontaltlysvindu, TRUE); 
         InvalidateRect(hWnd, &vertikaltlysvindu, TRUE);
