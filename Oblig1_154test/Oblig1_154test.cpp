@@ -498,15 +498,21 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         PostQuitMessage(0);
         break;
 
-    case WM_LBUTTONDOWN:
-   //     switch (status) {
-     //   case RED: status = REDYELLOW; break;
-     //   case REDYELLOW: status = GREEN; break;
-     //   case GREEN: status = YELLOW; break;
-     //   case YELLOW: status = RED; break;
-     //   }
-     //   InvalidateRect(hWnd, NULL, true);
-        SetTimer(hWnd, GREEN, 4000, NULL);
+    case WM_KEYDOWN:
+        switch (wParam) {
+        case VK_UP:
+            pn += 0.1;
+            break;
+        case VK_DOWN:
+            pn -= 0.1;
+            break;
+        case VK_LEFT:
+            pw -= 0.1;
+            break;
+        case VK_RIGHT:
+            pw += 0.1;
+            break;
+        }
 
     break;
 
