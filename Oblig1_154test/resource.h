@@ -14,7 +14,6 @@
 #define IDC_OBLIG1154TEST               109
 #define IDR_MAINFRAME                   128
 #define IDB_BITMAP1                     129
-#define IDD_DIALOG1                     130
 #define IDC_pw1                         1000
 #define IDC_pn1                         1001
 #define IDM_PROBABILITY                 32774

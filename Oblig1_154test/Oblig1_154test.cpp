@@ -7,6 +7,7 @@
 #include "bil.h"
 #include "vector"
 #include <queue>
+#include <string>
 
 
 #define MAX_LOADSTRING 100
@@ -164,10 +165,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         SetTimer(hWnd, 1, 4000, NULL);
         SetTimer(hWnd, 5, 100, NULL); // Timer for bilene, 100ms
 		SetTimer(hWnd, 6, 1000, NULL); // Timer for spawne biler, 1000ms
-
-
-
-
 
         break;
 
@@ -372,8 +369,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 DeleteObject(bilBrush);
                
 
-             
-            
+				TextOut(hdc, 10, 10, L"Bruk piltastene til å endre sannsynlighet", 41);
+				TextOut(hdc, 10, 30, L"Høyre/Venstre endrer pw", 23);
+                TextOut(hdc, 10, 50, L"Opp/Ned endrer pn", 17);
+				TextOut(hdc, 10, 70, L"pw: ", 4);
+				TextOut(hdc, 10, 90, L"pn: ", 4);
+				TextOut(hdc, 50, 70, std::to_wstring(pw).c_str(), std::to_wstring(pw).length());
+				TextOut(hdc, 50, 90, std::to_wstring(pn).c_str(), std::to_wstring(pn).length());
 
 
 
@@ -549,32 +551,31 @@ INT_PTR CALLBACK Probability(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPar
     {
     case WM_INITDIALOG:
     {
-		HWND pw1 = GetDlgItem(hDlg, IDC_pw1);
-		HWND pn1 = GetDlgItem(hDlg, IDC_pn1);
-		SetWindowText(pw1, L"0.1");
-		SetWindowText(pn1, L"0.1");
+
+        SetDlgItemText(hDlg, IDC_pw1, L"0.1");
+        SetDlgItemText(hDlg, IDC_pn1, L"0.1");
         return (INT_PTR)TRUE;
     }
     case WM_COMMAND:
         if (LOWORD(wParam) == IDOK) {
             wchar_t buffer[100];
 
-            // Get text from the input box
+            // Henter tekst fra skriveboksen
             GetDlgItemText(hDlg, IDC_pw1, buffer, sizeof(buffer) / sizeof(buffer[0]));
 
-            // Convert text to double
+            // Endrer input til double
             double pw = wcstod(buffer, NULL);
 
-            // Check if conversion was successful
+            // Sjekker konvertering
             if (pw != 0 || buffer[0] == '0') {
-                ::pw = pw; // Assign to the global variable
+                ::pw = pw; // Endrer global variabel
             }
 
-            // Repeat for pn
+            // Gjentar for pn
             GetDlgItemText(hDlg, IDC_pn1, buffer, sizeof(buffer) / sizeof(buffer[0]));
             double pn = wcstod(buffer, NULL);
             if (pn != 0 || buffer[0] == '0') {
-                ::pn = pn; // Assign to the global variable
+				::pn = pn; //Endrer global variabel
             }
 
             EndDialog(hDlg, LOWORD(wParam));
